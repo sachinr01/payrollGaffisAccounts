@@ -170,8 +170,12 @@ export default function AddPayrollUserPage() {
 
       if (!res.ok) {
         if (data.errors) {
-          const errors = Object.values(data.errors).flat();
+          const errors = Object.values(data.errors)
+            .flat()
+            .map((err) => String(err));
+
           setErrorMessages(errors);
+
         } else {
           setErrorMessages([data.message || "Server error"]);
         }
