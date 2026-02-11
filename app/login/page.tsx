@@ -27,8 +27,6 @@ export default function Home() {
       const res = await fetch(
         "https://gaffis.net/pulse/public/api/accounts/login",
         {
-          // http://localhost:5000/api/auth/login
-          // const res = await fetch("https://gaffis.in/nodeBackednServer/api/auth/login", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -51,7 +49,9 @@ export default function Home() {
       }
 
       // ✅ Login success
+      localStorage.setItem("user", JSON.stringify(data));
       localStorage.setItem("isLoggedIn", "true");
+
       router.push("/dashboard");
     } catch (err) {
       setError("Server not reachable");

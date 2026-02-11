@@ -23,3 +23,7 @@ body .page-wrapper-new {
 body .mini-sidebar .page-wrapper-new.collapsed {
   margin-left: 65px;
 }
+
+.sidebar-sub-parent-div a{
+  display: flex;
+}

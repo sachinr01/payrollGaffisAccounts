@@ -24,6 +24,7 @@ export default function EditPayrollPage() {
         total_deduction: "",
         gross_salary: "",
         inhand_salary: "",
+        payment_month: "",
         payment_date: "",
         due_date: "",
         salary_status: "",
@@ -72,21 +73,35 @@ export default function EditPayrollPage() {
 
         const salary = parseFloat(updated.salary) || 0;
         const tds = parseFloat(updated.tds_deduction) || 0;
-        const pt = parseFloat(updated.pt_deduction) || 0;
         const otherDed = parseFloat(updated.other_deduction) || 0;
 
+        // 🔹 PT logic (based on existing value)
+        let pt = parseFloat(updated.pt_deduction) || 0;
+
+        // If PT was previously 0 or 200, auto adjust based on salary rule
+        if (pt === 0 || pt === 200) {
+            // If salary < 25000 → 0
+            // If salary >= 25000 → 200
+            pt = salary >= 25000 ? 200 : 0;
+        }
+
+        updated.pt_deduction = pt.toFixed(2);
+
+        // 🔹 Salary breakdown
         updated.basic_pay = (salary * 0.4).toFixed(2);
         updated.hr_allowance = (salary * 0.2).toFixed(2);
         updated.conveyence_allowance = (salary * 0.25).toFixed(2);
         updated.other_allowance = (salary * 0.15).toFixed(2);
 
         const totalDed = tds + pt + otherDed;
+
         updated.total_deduction = totalDed.toFixed(2);
         updated.gross_salary = salary.toFixed(2);
         updated.inhand_salary = (salary - totalDed).toFixed(2);
 
         setForm(updated);
     };
+
 
     /* 🔹 Update payroll */
     const handleSubmit = async () => {
@@ -102,6 +117,7 @@ export default function EditPayrollPage() {
                         "Accept": "application/json",
                     },
                     body: JSON.stringify({
+                        salary: Number(form.salary),
                         basic_pay: Number(form.basic_pay),
                         hr_allowance: Number(form.hr_allowance),
                         conveyence_allowance: Number(form.conveyence_allowance),
@@ -112,6 +128,7 @@ export default function EditPayrollPage() {
                         total_deduction: Number(form.total_deduction),
                         gross_salary: Number(form.gross_salary),
                         inhand_salary: Number(form.inhand_salary),
+                        payment_month: form.payment_month,
                         payment_date: form.payment_date,
                         due_date: form.due_date,
                         salary_status: form.salary_status,
@@ -204,6 +221,18 @@ export default function EditPayrollPage() {
                                 className="form-control"
                                 name="payment_date"
                                 value={form.payment_date}
+                                onChange={handleChange}
+                            />
+                        </div>
+                    </div>
+                    <div className="col-md-4">
+                        <div className="form-group my-3">
+                            <label>Payment Month</label>
+                            <input
+                                type="month"
+                                className="form-control"
+                                name="payment_month"
+                                value={form.payment_month}
                                 onChange={handleChange}
                             />
                         </div>

@@ -1,10 +1,12 @@
 "use client";
 
+import { useAuth } from "@/app/context/AuthContext";
 import { useLogout } from "@/lib/logout";
 import Image from "next/image";
 import Link from "next/link";
 
 export default function Sidebar() {
+  const { user, isAdmin, loadingData } = useAuth();
   const logout = useLogout();
   return (
     <aside className="left-sidebar">
@@ -35,13 +37,13 @@ export default function Sidebar() {
                     aria-expanded="false"
                   >
                     <h5 className="mb-0 user-name font-medium d-flex">
-                      Steave Jobs
+                      {user?.name}
                       <i data-feather="chevron-down" className="feather-sm"></i>
                     </h5>
-                    <span className="op-5 user-email">varun@gmail.com</span>
+                    <span className="op-5 user-email">{user?.email}</span>
                   </a>
                   <div
-                    className="dropdown-menu dropdown-menu-right"
+                    className="dropdown-menu dropdown-menu-right sidebar-sub-parent-div"
                     aria-labelledby="Userdd"
                   >
                     <a className="dropdown-item" href="#">

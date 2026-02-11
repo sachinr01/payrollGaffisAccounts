@@ -13,17 +13,20 @@ export default function AddPayrollUserPage() {
   const [errors, setErrors] = useState({
     user_id: false,
     salary: false,
+    payment_month: false,
     payment_date: false,
   });
 
   const userRef = useRef<HTMLSelectElement>(null);
   const salaryRef = useRef<HTMLInputElement>(null);
+  const monthRef = useRef<HTMLInputElement>(null);
   const dateRef = useRef<HTMLInputElement>(null);
 
   const validateForm = () => {
     const newErrors = {
       user_id: !form.user_id,
       salary: !form.salary,
+      payment_month: !form.payment_month,
       payment_date: !form.payment_date,
     };
 
@@ -33,6 +36,12 @@ export default function AddPayrollUserPage() {
     if (newErrors.user_id && userRef.current) {
       userRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
       userRef.current.focus();
+      return false;
+    }
+
+    if (newErrors.payment_month && monthRef.current) {
+      monthRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+      monthRef.current.focus();
       return false;
     }
 
@@ -74,6 +83,7 @@ export default function AddPayrollUserPage() {
     gross_salary: "",
     inhand_salary: "",
     comment: "",
+    payment_month: "",
     payment_date: "",
     due_date: "",
     salary_status: "pending",
@@ -99,29 +109,39 @@ export default function AddPayrollUserPage() {
     const { name, value } = e.target;
     let updated = { ...form, [name]: value };
 
-    if (name === "user_id") {
-      const user = users.find((u) => String(u.user_id) === String(value));
-      updated.pt_deduction =
-        user?.gender?.toLowerCase() === "female" ? "0" : "200";
-    }
+    // Get selected user
+    const selectedUser = users.find(
+      (u) => String(u.user_id) === String(updated.user_id)
+    );
 
     const salary = parseFloat(updated.salary) || 0;
     const tds = parseFloat(updated.tds_deduction) || 0;
-    const pt = parseFloat(updated.pt_deduction) || 0;
     const otherDed = parseFloat(updated.other_deduction) || 0;
 
+    // ✅ Updated PT Logic
+    let pt = 200;
+
+    if (selectedUser?.gender?.toLowerCase() === "female") {
+      pt = salary >= 25000 ? 200 : 0;
+    }
+
+    updated.pt_deduction = pt.toString();
+
+    // Salary breakdown
     updated.basic_pay = (salary * 0.4).toFixed(2);
     updated.hr_allowance = (salary * 0.2).toFixed(2);
     updated.conveyence_allowance = (salary * 0.25).toFixed(2);
     updated.other_allowance = (salary * 0.15).toFixed(2);
 
     const totalDed = tds + pt + otherDed;
+
     updated.total_deduction = totalDed.toFixed(2);
     updated.gross_salary = salary.toFixed(2);
     updated.inhand_salary = (salary - totalDed).toFixed(2);
 
     setForm(updated);
   };
+
 
   /* 🔹 Submit */
   const handleSubmit = async () => {
@@ -498,7 +518,7 @@ export default function AddPayrollUserPage() {
                   />
                 </div>
               </div>
-              <div className="col-md-4">
+              <div className="col-md-6">
                 <div className="form-group my-3">
                   <label className="mb-3" htmlFor="payment_date">
                     Payment Date <sup className="f-14 mr-1 text-danger">*</sup>
@@ -517,7 +537,26 @@ export default function AddPayrollUserPage() {
                   />
                 </div>
               </div>
-              <div className="col-md-4">
+              <div className="col-md-6">
+                <div className="form-group my-3">
+                  <label className="mb-3" htmlFor="payment_month">
+                    Payment Month <sup className="f-14 mr-1 text-danger">*</sup>
+                  </label>
+
+                  <input
+                    ref={monthRef}
+                    type="month"
+                    className={`form-control height-35 f-14 ${errors.payment_month ? 'border-danger' : ''}`}
+                    placeholder=""
+                    name="payment_month"
+                    id="payment_month"
+                    autoComplete="off"
+                    value={form.payment_month}
+                    onChange={handleChange}
+                  />
+                </div>
+              </div>
+              <div className="col-md-6">
                 <div className="form-group my-3">
                   <label className="mb-3" htmlFor="due_date">
                     Due Date <sup className="f-14 mr-1 text-danger">*</sup>
@@ -535,7 +574,7 @@ export default function AddPayrollUserPage() {
                   />
                 </div>
               </div>
-              <div className="col-md-4">
+              <div className="col-md-6">
                 <div className="form-group my-3">
                   <label className="mb-3" htmlFor="salary_status">
                     Salary Status <sup className="f-14 mr-1 text-danger">*</sup>

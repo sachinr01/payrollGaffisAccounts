@@ -7,15 +7,14 @@ export default function DashboardPage() {
   const router = useRouter();
 
   useEffect(() => {
-    if (localStorage.getItem("isLoggedIn") !== "true") {
+    const isLoggedIn = localStorage.getItem("user");
+
+    if (!isLoggedIn) {
       router.replace("/login");
+    } else {
+      router.replace("/dashboard");
     }
   }, [router]);
 
-  return (
-    <div>
-      <h1>Welcome to Dashboard</h1>
-      <p>You are logged in successfully.</p>
-    </div>
-  );
+  return null;
 }

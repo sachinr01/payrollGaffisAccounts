@@ -1,5 +1,6 @@
 "use client";
 
+import { useAuth } from "@/app/context/AuthContext";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Search, ChevronDown, Edit2, Trash2, Plus, Filter } from "lucide-react";
@@ -7,9 +8,13 @@ import { Eye, Pencil, Download } from "lucide-react";
 import toast from "react-hot-toast";
 
 export default function EmployeeDashboard() {
+  const { user, isAdmin, loadingData } = useAuth();
+
   const router = useRouter();
   const [payrolls, setPayrolls] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [filterMonth, setFilterMonth] = useState("");
+  const [filterDate, setFilterDate] = useState("");
 
   useEffect(() => {
     const fetchPayrolls = async () => {
@@ -66,8 +71,8 @@ export default function EmployeeDashboard() {
     }
   };
 
+  if (loadingData) return null; // or show loader
 
-  const [open, setOpen] = useState(false);
 
   return (
     <div className="page-wrapper-new">
@@ -100,8 +105,41 @@ export default function EmployeeDashboard() {
           </div>
         </div>
       </div>
-      <div className="card">
+      <div className="card shadow">
         <div className="table-responsive card-body">
+          <div className="row mb-3">
+            <div className="col-md-3">
+              <label>Payment Month</label>
+              <input
+                type="month"
+                className="form-control"
+                value={filterMonth}
+                onChange={(e) => setFilterMonth(e.target.value)}
+              />
+            </div>
+
+            <div className="col-md-3">
+              <label>Payment Date</label>
+              <input
+                type="date"
+                className="form-control"
+                value={filterDate}
+                onChange={(e) => setFilterDate(e.target.value)}
+              />
+            </div>
+
+            <div className="col-md-2 d-flex align-items-end">
+              <button
+                className="btn btn-secondary w-100"
+                onClick={() => {
+                  setFilterMonth("");
+                  setFilterDate("");
+                }}
+              >
+                Clear Filter
+              </button>
+            </div>
+          </div>
 
           {/* Table */}
           <table
@@ -115,10 +153,12 @@ export default function EmployeeDashboard() {
                 <th>Basic Pay</th>
                 <th>Total Deduction</th>
                 <th>Inhand Salary</th>
+                <th>Payment Month</th>
                 <th>Payment Date</th>
-                <th>Due Date</th>
                 <th>Status</th>
-                <th>Action</th>
+                {isAdmin && (
+                  <th>Action</th>
+                )}
               </tr>
             </thead>
             <tbody>
@@ -139,63 +179,86 @@ export default function EmployeeDashboard() {
               )}
 
               {!loading &&
-                payrolls.map((payroll) => {
+                payrolls
+                  .filter((payroll) => {
+                    const monthMatch = filterMonth
+                      ? payroll.payment_month?.startsWith(filterMonth)
+                      : true;
+
+                    const dateMatch = filterDate
+                      ? payroll.payment_date === filterDate
+                      : true;
+
+                    return monthMatch && dateMatch;
+                  })
+                  .map((payroll) => {
 
 
-                  return (
-                    <tr key={payroll.payroll_id}>
-                      {/* User */}
-                      <td>{payroll.user?.name ?? "-"}</td>
 
-                      <td>₹{payroll.salary}</td>
-                      <td>₹{payroll.basic_pay}</td>
-                      <td>₹{payroll.total_deduction}</td>
+                    return (
+                      <tr key={payroll.payroll_id}>
+                        {/* User */}
+                        <td>{payroll.user?.name ?? "-"}</td>
 
-                      {/* Net Salary */}
-                      <td>₹{payroll.inhand_salary}</td>
-                      {/* Payment Date */}
-                      <td>{payroll.payment_date ?? "-"}</td>
+                        <td>₹{payroll.salary}</td>
+                        <td>₹{payroll.basic_pay}</td>
+                        <td>₹{payroll.total_deduction}</td>
 
-                      {/* Month */}
-                      <td>{payroll.due_date ?? "-"}</td>
-
-
-                      {/* Status */}
-                      <td className="capitalize">{payroll.salary_status}</td>
-
-                      {/* Actions */}
-                      <td>
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => router.push(`/payroll/view/${payroll.payroll_id}`)}
-                            className="flex items-center justify-center w-10 h-10 rounded border bg-blue-500 hover:bg-blue-600 text-white transition"
-                          >
-                            <Eye size={18} />
-                          </button>
-
-                          <button
-                            onClick={() => router.push(`/payroll/edit/${payroll.payroll_id}`)}
-                            className="flex items-center justify-center w-10 h-10 rounded border bg-blue-500 hover:bg-blue-600 text-white transition"
-                          >
-                            <Pencil size={18} />
-                          </button>
+                        {/* Net Salary */}
+                        <td>₹{payroll.inhand_salary}</td>
+                        {/* Payment Month */}
+                        <td>
+                          {payroll.payment_month
+                            ? new Date(payroll.payment_month + "-01").toLocaleString("en-US", {
+                              month: "short",
+                              year: "numeric",
+                            })
+                            : "-"}
+                        </td>
+                        {/* Payment Date */}
+                        <td>{payroll.payment_date ?? "-"}</td>
 
 
-                          <button
-                            onClick={() => handleDelete(payroll.payroll_id)}
-                            className="flex items-center justify-center w-10 h-10 rounded border bg-blue-500 hover:bg-blue-600 text-white transition">
-                            <Trash2 size={18} />
-                          </button>
+                        {/* Status */}
+                        <td className="capitalize">{payroll.salary_status}</td>
 
-                          <button className="flex items-center gap-2 px-4 h-10 rounded border bg-blue-500 hover:bg-blue-600 text-white font-medium transition">
-                            <Download size={18} />
-                            Payroll Slip
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
+                        {/* Actions */}
+                        {isAdmin && (
+                          <td>
+                            <div className="flex items-center gap-2">
+
+                              <button
+                                onClick={() => router.push(`/payroll/view/${payroll.payroll_id}`)}
+                                className="flex items-center justify-center w-10 h-10 rounded border bg-blue-500 hover:bg-blue-600 text-white transition"
+                              >
+                                <Eye size={18} />
+                              </button>
+
+                              <button
+                                onClick={() => router.push(`/payroll/edit/${payroll.payroll_id}`)}
+                                className="flex items-center justify-center w-10 h-10 rounded border bg-blue-500 hover:bg-blue-600 text-white transition"
+                              >
+                                <Pencil size={18} />
+                              </button>
+
+
+                              <button
+                                onClick={() => handleDelete(payroll.payroll_id)}
+                                className="flex items-center justify-center w-10 h-10 rounded border bg-blue-500 hover:bg-blue-600 text-white transition">
+                                <Trash2 size={18} />
+                              </button>
+
+                              <button className="flex items-center gap-2 px-4 h-10 rounded border bg-blue-500 hover:bg-blue-600 text-white font-medium transition">
+                                <Download size={18} />
+                                Payroll Slip
+                              </button>
+
+                            </div>
+                          </td>
+                        )}
+                      </tr>
+                    );
+                  })}
             </tbody>
 
           </table>

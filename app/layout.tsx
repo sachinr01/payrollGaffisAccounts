@@ -4,6 +4,7 @@ import "./globals.css";
 import "./dist/css/style.min.css";
 import "./dist/css/dataTables.bootstrap5.min.css";
 import Script from "next/script";
+import { AuthProvider } from "./context/AuthContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,7 +29,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
-        {children}
+        <AuthProvider>
+          {children}
+        </AuthProvider>
+        
         <Script id="sidebar-toggle-ln" strategy="afterInteractive">
           {`
             document.addEventListener("click", function (e) {
