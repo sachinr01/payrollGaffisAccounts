@@ -8,6 +8,8 @@ import { Eye, Pencil, Download } from "lucide-react";
 import toast from "react-hot-toast";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
+import Swal from "sweetalert2";
+
 
 export default function EmployeeDashboard() {
   const { user, isAdmin, loadingData } = useAuth();
@@ -45,33 +47,66 @@ export default function EmployeeDashboard() {
   }, [router]);
 
   const handleDelete = async (id: number) => {
-    if (!confirm("Are you sure you want to delete this payroll?")) return;
+    const result = await Swal.fire({
+      title: "Delete Payroll?",
+      html: `
+      <p style="margin-bottom:10px;">
+        This action cannot be undone.
+      </p>
+      <p style="margin-bottom:15px;">
+        Type <strong>DELETE</strong> below to confirm.
+      </p>
+      <input 
+        type="text" 
+        id="confirmInput" 
+        class="swal2-input" 
+        placeholder="Type DELETE"
+      />
+    `,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Delete",
+      confirmButtonColor: "#dc3545",
+      cancelButtonColor: "#6c757d",
+      preConfirm: () => {
+        const input = (
+          document.getElementById("confirmInput") as HTMLInputElement
+        ).value;
+
+        if (input !== "DELETE") {
+          Swal.showValidationMessage("You must type DELETE to confirm");
+          return false;
+        }
+        return true;
+      },
+    });
+
+    if (!result.isConfirmed) return;
 
     try {
       const res = await fetch(
         `https://gaffis.net/pulse/public/api/payroll/delete/${id}`,
-        {
-          method: "POST",
-        }
+        { method: "POST" }
       );
 
       const data = await res.json();
 
       if (!res.ok) {
-        toast.error(data.message || "Delete failed");
+        Swal.fire("Error", data.message || "Delete failed", "error");
         return;
       }
 
-      toast.success("Payroll deleted successfully");
-
-      // ✅ remove row instantly
       setPayrolls((prev) =>
         prev.filter((item) => item.payroll_id !== id)
       );
+      
+      toast.success("Payroll deleted successfully");
+
     } catch (error) {
-      toast.error("Something went wrong");
+      Swal.fire("Error", "Something went wrong", "error");
     }
   };
+
 
 
   const handleDownload = async (id: number) => {
