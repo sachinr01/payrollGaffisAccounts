@@ -52,7 +52,8 @@ export default function Home() {
       localStorage.setItem("user", JSON.stringify(data));
       localStorage.setItem("isLoggedIn", "true");
 
-      router.push("/dashboard");
+     window.location.href = "/dashboard";
+
     } catch (err) {
       setError("Server not reachable");
     } finally {

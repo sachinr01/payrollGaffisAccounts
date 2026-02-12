@@ -3,7 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import "./dist/css/style.min.css";
 import "./dist/css/dataTables.bootstrap5.min.css";
-import Script from "next/script";
+import ThemeScripts from "./ThemeScripts";
 import { AuthProvider } from "./context/AuthContext";
 
 const geistSans = Geist({
@@ -32,20 +32,9 @@ export default function RootLayout({
         <AuthProvider>
           {children}
         </AuthProvider>
-        
-        <Script id="sidebar-toggle-ln" strategy="afterInteractive">
-          {`
-            document.addEventListener("click", function (e) {
-              const toggle = e.target.closest(".sidebartoggler");
-              if (!toggle) return;
 
-              const pageWrapper = document.querySelector(".page-wrapper-new");
-              if (!pageWrapper) return;
+        <ThemeScripts />
 
-              pageWrapper.classList.toggle("collapsed");
-            });
-          `}
-        </Script>
       </body>
     </html>
   );

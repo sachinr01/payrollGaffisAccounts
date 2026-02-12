@@ -14,7 +14,7 @@ export default function Header() {
           {/* <!-- This is for the sidebar toggle which is visible on mobile only --> */}
           <a
             className="nav-toggler waves-effect waves-light d-block d-md-none"
-            href="javascript:void(0)"
+            href="#"
           >
             <i className="ri-close-line fs-6 ri-menu-2-line"></i>
           </a>
@@ -40,7 +40,7 @@ export default function Header() {
 
           <a
             className="topbartoggler d-block d-md-none waves-effect waves-light"
-            href="javascript:void(0)"
+            href="#"
             data-bs-toggle="collapse"
             data-bs-target="#navbarSupportedContent"
             aria-controls="navbarSupportedContent"
@@ -57,7 +57,7 @@ export default function Header() {
             <li className="nav-item d-none d-md-block">
               <a
                 className="nav-link sidebartoggler waves-effect waves-light"
-                href="javascript:void(0)"
+                href="#"
                 data-sidebartype="mini-sidebar"
               >
                 <i data-feather="menu" className="feather-sm"></i>
