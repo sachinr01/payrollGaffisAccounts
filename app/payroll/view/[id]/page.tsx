@@ -92,6 +92,12 @@ export default function ViewPayroll() {
 
                     <p><b>Due Date:</b> {payroll.due_date}</p>
                     <p><b>Payroll ID:</b> #{payroll.payroll_id}</p>
+                    <p><b>Payment Month:</b>  {payroll.payment_month
+                            ? new Date(payroll.payment_month + "-01").toLocaleString("en-US", {
+                              month: "short",
+                              year: "numeric",
+                            })
+                            : "-"}</p>
                 </div>
 
                 {/* Earnings & Deductions */}
