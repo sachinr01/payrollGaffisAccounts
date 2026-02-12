@@ -99,7 +99,7 @@ export default function EmployeeDashboard() {
       setPayrolls((prev) =>
         prev.filter((item) => item.payroll_id !== id)
       );
-      
+
       toast.success("Payroll deleted successfully");
 
     } catch (error) {
@@ -274,12 +274,14 @@ export default function EmployeeDashboard() {
           </div>
           <div className="col-7 align-self-center">
             <div className="d-flex no-block justify-content-end align-items-center">
-              <button
-                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md transition"
-                onClick={() => router.push("/payroll/addUser")}
-              >
-                Add New
-              </button>
+              {isAdmin && (
+                <button
+                  className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md transition"
+                  onClick={() => router.push("/payroll/addUser")}
+                >
+                  Add New
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -368,8 +370,14 @@ export default function EmployeeDashboard() {
                       ? payroll.payment_date === filterDate
                       : true;
 
-                    return monthMatch && dateMatch;
+                    // 👇 KEY CHANGE
+                    const roleMatch = isAdmin
+                      ? true
+                      : payroll.user_id === user?.id;
+
+                    return monthMatch && dateMatch && roleMatch;
                   })
+
                   .map((payroll) => {
 
 
