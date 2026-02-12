@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import { Search, ChevronDown, Edit2, Trash2, Plus, Filter } from "lucide-react";
 import { Eye, Pencil, Download } from "lucide-react";
 import toast from "react-hot-toast";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 
 export default function EmployeeDashboard() {
   const { user, isAdmin, loadingData } = useAuth();
@@ -71,8 +73,150 @@ export default function EmployeeDashboard() {
     }
   };
 
-  if (loadingData) return null; // or show loader
 
+  const handleDownload = async (id: number) => {
+    try {
+      const res = await fetch(
+        `https://gaffis.net/pulse/public/api/payroll/${id}`
+      );
+
+      const response = await res.json();
+
+      if (!res.ok || !response.success) {
+        toast.error("Failed to fetch payroll details");
+        return;
+      }
+
+      const payroll = response.data;
+
+      // Convert 2026-01 → January 2026
+      const formatMonth = (monthStr: string) => {
+        const date = new Date(monthStr + "-01");
+        return date.toLocaleString("en-US", {
+          month: "long",
+          year: "numeric",
+        });
+      };
+
+      const formattedMonth = formatMonth(payroll.payment_month);
+
+      // ===== CREATE A4 SIZE CONTAINER =====
+      const element = document.createElement("div");
+
+      element.style.width = "794px"; // A4 width in px
+      element.style.minHeight = "1123px"; // A4 height in px
+      element.style.padding = "60px 50px 80px 50px"; // more bottom space
+      element.style.background = "#ffffff";
+      element.style.fontFamily = "Arial, sans-serif";
+      element.style.color = "#2c3e50";
+
+      element.innerHTML = `
+     <div style="text-align:center; margin-bottom:30px;">
+      <div style="display:flex; justify-content:center; margin-bottom:15px;">
+        <img src="/logo-icon.png" style="width:140px; display:block;" />
+      </div>
+      <h1 style="margin:0; font-size:28px;">
+        Gaffis Technologies PVT LMT
+      </h1>
+      <h2 style="margin:8px 0 0 0; font-weight:500; font-size:20px;">
+        Salary Slip - ${formattedMonth}
+      </h2>
+
+     </div>
+
+
+      <hr style="margin:25px 0;"/>
+
+      <div style="display:flex; justify-content:space-between; font-size:16px; line-height:28px;">
+        <div>
+          <p><strong>Employee Name:</strong> ${payroll.user?.name ?? "-"}</p>
+          <p><strong>Gross Salary:</strong> ₹${payroll.salary ?? 0}</p>
+          <p><strong>Payment Date:</strong> ${payroll.payment_date ?? "-"}</p>
+          <p><strong>Due Date:</strong> ${payroll.due_date ?? "-"}</p>
+        </div>
+        <div>
+          <p><strong>Status:</strong> ${payroll.salary_status ?? "-"}</p>
+          <p><strong>In-hand Salary:</strong> ₹${payroll.inhand_salary ?? 0}</p>
+          <p><strong>Payroll ID:</strong> #${payroll.payroll_id ?? "-"}</p>
+        </div>
+      </div>
+
+      <hr style="margin:30px 0;"/>
+
+      <div style="display:flex; justify-content:space-between;">
+
+        <table style="width:48%; border-collapse:collapse; font-size:16px;">
+          <thead>
+            <tr style="background:#2962ff; color:white;">
+              <th style="padding:10px; text-align:left;">Earnings</th>
+              <th style="padding:10px;">Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td style="padding:8px;">Basic Pay</td><td>₹${payroll.basic_pay ?? 0}</td></tr>
+            <tr><td style="padding:8px;">HRA</td><td>₹${payroll.hr_allowance ?? 0}</td></tr>
+            <tr><td style="padding:8px;">Conveyance</td><td>₹${payroll.conveyance ?? 0}</td></tr>
+            <tr><td style="padding:8px;">Other Allowance</td><td>₹${payroll.other_allowance ?? 0}</td></tr>
+            <tr style="font-weight:bold;">
+              <td style="padding:8px;">Total Salary</td>
+              <td>₹${payroll.salary ?? 0}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <table style="width:48%; border-collapse:collapse; font-size:16px;">
+          <thead>
+            <tr style="background:#dc3545; color:white;">
+              <th style="padding:10px; text-align:left;">Deductions</th>
+              <th style="padding:10px;">Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td style="padding:8px;">TDS</td><td>₹${payroll.tds ?? 0}</td></tr>
+            <tr><td style="padding:8px;">PT</td><td>₹${payroll.pt ?? 0}</td></tr>
+            <tr><td style="padding:8px;">Other Deduction</td><td>₹${payroll.other_deduction ?? 0}</td></tr>
+            <tr style="font-weight:bold;">
+              <td style="padding:8px;">Total Deduction</td>
+              <td>₹${payroll.total_deduction ?? 0}</td>
+            </tr>
+          </tbody>
+        </table>
+
+      </div>
+
+      <div style="margin-top:50px; font-size:16px;">
+        <p><strong>Comment:</strong> ${payroll.comment ?? "-"}</p>
+      </div>
+
+      <div style="margin-top:120px; text-align:right; font-size:16px;">
+        <p>Authorised Signature</p>
+      </div>
+    `;
+
+      document.body.appendChild(element);
+
+      const canvas = await html2canvas(element, { scale: 2 });
+      const imgData = canvas.toDataURL("image/png");
+
+      const pdf = new jsPDF("p", "mm", "a4");
+
+      pdf.addImage(imgData, "PNG", 0, 0, 210, 297);
+
+      document.body.removeChild(element);
+
+      const employeeName =
+        payroll.user?.name?.replace(/\s+/g, "_") || "Employee";
+
+      pdf.save(`${employeeName}_${formattedMonth}.pdf`);
+    } catch (error) {
+      toast.error("Error generating payroll PDF");
+    }
+  };
+
+
+
+
+  if (loadingData) return null; // or show loader
 
   return (
     <div className="page-wrapper-new">
@@ -228,14 +372,14 @@ export default function EmployeeDashboard() {
                             <div className="flex items-center gap-2">
 
                               <button
-                                onClick={() => router.push(`/payroll/view/${payroll.payroll_id}`)}
+                                onClick={() => (window.location.href = `/payroll/view/${payroll.payroll_id}`)}
                                 className="flex items-center justify-center w-10 h-10 rounded border bg-blue-500 hover:bg-blue-600 text-white transition"
                               >
                                 <Eye size={18} />
                               </button>
 
                               <button
-                                onClick={() => router.push(`/payroll/edit/${payroll.payroll_id}`)}
+                                onClick={() => (window.location.href = `/payroll/edit/${payroll.payroll_id}`)}
                                 className="flex items-center justify-center w-10 h-10 rounded border bg-blue-500 hover:bg-blue-600 text-white transition"
                               >
                                 <Pencil size={18} />
@@ -248,7 +392,9 @@ export default function EmployeeDashboard() {
                                 <Trash2 size={18} />
                               </button>
 
-                              <button className="flex items-center gap-2 px-4 h-10 rounded border bg-blue-500 hover:bg-blue-600 text-white font-medium transition">
+                              <button
+                                onClick={() => handleDownload(payroll.payroll_id)}
+                                className="flex items-center gap-2 px-4 h-10 rounded border bg-blue-500 hover:bg-blue-600 text-white font-medium transition">
                                 <Download size={18} />
                                 Payroll Slip
                               </button>
