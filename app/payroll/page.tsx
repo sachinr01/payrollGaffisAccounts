@@ -190,7 +190,7 @@ export default function EmployeeDashboard() {
           <tbody>
             <tr><td style="padding:8px;">Basic Pay</td><td>₹${payroll.basic_pay ?? 0}</td></tr>
             <tr><td style="padding:8px;">HRA</td><td>₹${payroll.hr_allowance ?? 0}</td></tr>
-            <tr><td style="padding:8px;">Conveyance</td><td>₹${payroll.conveyance ?? 0}</td></tr>
+            <tr><td style="padding:8px;">Conveyance</td><td>₹${payroll.conveyence_allowance ?? 0}</td></tr>
             <tr><td style="padding:8px;">Other Allowance</td><td>₹${payroll.other_allowance ?? 0}</td></tr>
             <tr style="font-weight:bold;">
               <td style="padding:8px;">Total Salary</td>
@@ -207,8 +207,8 @@ export default function EmployeeDashboard() {
             </tr>
           </thead>
           <tbody>
-            <tr><td style="padding:8px;">TDS</td><td>₹${payroll.tds ?? 0}</td></tr>
-            <tr><td style="padding:8px;">PT</td><td>₹${payroll.pt ?? 0}</td></tr>
+            <tr><td style="padding:8px;">TDS</td><td>₹${payroll.tds_deduction ?? 0}</td></tr>
+            <tr><td style="padding:8px;">PT</td><td>₹${payroll.pt_deduction ?? 0}</td></tr>
             <tr><td style="padding:8px;">Other Deduction</td><td>₹${payroll.other_deduction ?? 0}</td></tr>
             <tr style="font-weight:bold;">
               <td style="padding:8px;">Total Deduction</td>
@@ -302,7 +302,7 @@ export default function EmployeeDashboard() {
             <div className="col-md-3">
               <label>Payment Date</label>
               <input
-                type="date"
+                type="month"
                 className="form-control"
                 value={filterDate}
                 onChange={(e) => setFilterDate(e.target.value)}
@@ -367,7 +367,7 @@ export default function EmployeeDashboard() {
                       : true;
 
                     const dateMatch = filterDate
-                      ? payroll.payment_date === filterDate
+                      ? payroll.payment_date?.startsWith(filterDate)
                       : true;
 
                     // 👇 KEY CHANGE
@@ -439,7 +439,7 @@ export default function EmployeeDashboard() {
                                 onClick={() => handleDownload(payroll.payroll_id)}
                                 className="flex items-center gap-2 px-4 h-10 rounded border bg-blue-500 hover:bg-blue-600 text-white font-medium transition">
                                 <Download size={18} />
-                                Payroll Slip
+                                Pay Slip
                               </button>
 
                             </div>
