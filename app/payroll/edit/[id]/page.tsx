@@ -164,7 +164,8 @@ export default function EditPayrollPage() {
             <div className="pt-4 pr-5 pl-5">
                 <div className="row">
                     <div className="col-5 align-self-center">
-                        <h4 className="page-title">Edit Payroll</h4>
+                        {/* <h4 className="page-title">Edit Payroll</h4> */}
+                        <h4 className="page-title"> {form.user.name}</h4>
                         <div className="d-flex align-items-center">
                             <nav aria-label="breadcrumb">
                                 <ol className="breadcrumb">
